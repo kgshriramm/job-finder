@@ -22,7 +22,7 @@ const jobs = [
 
 function Icon({ name, size = 18, fill = 'none' }) {
   const paths = {
-    menu: <><path d="M4 7h16M4 12h16M4 17h10" /></>, search: <><circle cx="11" cy="11" r="6" /><path d="m16 16 4 4" /></>, tune: <><path d="M4 6h16M7 12h10M10 18h4" /></>, arrow: <><path d="M5 12h14M13 6l6 6-6 6" /></>, close: <><path d="m6 6 12 12M18 6 6 18" /></>, pin: <><path d="M19 10c0 5-7 10-7 10S5 15 5 10a7 7 0 1 1 14 0Z" /><circle cx="12" cy="10" r="2" /></>, briefcase: <><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M8 7V5h8v2M3 12h18" /></>, clock: <><circle cx="12" cy="12" r="8" /><path d="M12 8v4l3 2" /></>, bookmark: <path d="M6 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18l-6-4-6 4V4Z" />, check: <path d="m5 12 4 4L19 6" />, bolt: <path d="m13 2-9 12h7l-1 8 10-13h-7V2Z" />,
+    menu: <><path d="M4 7h16M4 12h16M4 17h10" /></>, search: <><circle cx="11" cy="11" r="6" /><path d="m16 16 4 4" /></>, tune: <><path d="M4 6h16M7 12h10M10 18h4" /></>, arrow: <><path d="M5 12h14M13 6l6 6-6 6" /></>, close: <><path d="m6 6 12 12M18 6 6 18" /></>, pin: <><path d="M19 10c0 5-7 10-7 10S5 15 5 10a7 7 0 1 1 14 0Z" /><circle cx="12" cy="10" r="2" /></>, briefcase: <><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M8 7V5h8v2M3 12h18" /></>, clock: <><circle cx="12" cy="12" r="8" /><path d="M12 8v4l3 2" /></>, bookmark: <path d="M6 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18l-6-4-6 4V4Z" />, check: <path d="m5 12 4 4L19 6" />, bolt: <path d="m13 2-9 12h7l-1 8 10-13h-7V2Z" />, share: <><circle cx="18" cy="5" r="2.5" /><circle cx="6" cy="12" r="2.5" /><circle cx="18" cy="19" r="2.5" /><path d="m8.2 10.7 7.6-4.4M8.2 13.3l7.6 4.4" /></>,
   }
   return <svg width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth="1.85" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>
 }
@@ -52,6 +52,7 @@ function JobDialog({ job, saved, onClose, onSave }) {
 }
 
 const WHATSAPP_COMMUNITY_URL = 'https://chat.whatsapp.com/DpfCjTKfzAYKi9X1bPoeBQ?s=cl&p=a&mlu=4&ilr=4'
+const RAZORPAY_ARTICLE_HASH = '#razorpay-sde-1'
 
 function MenuDrawer({ onClose, onReadRazorpay }) {
   return <div className="menu-backdrop" onMouseDown={onClose}>
@@ -68,6 +69,18 @@ function MenuDrawer({ onClose, onReadRazorpay }) {
 }
 
 function RazorpayArticle({ job, onBack }) {
+  const [shareStatus, setShareStatus] = useState('')
+  const shareArticle = async () => {
+    const articleUrl = new URL('/razorpay-sde-1.html', window.location.origin).href
+    const shareData = { title: 'Software Development Engineer I at Razorpay | OPTQVO', text: 'Razorpay SDE I role brief, application checklist and official apply link.', url: articleUrl }
+    try {
+      if (navigator.share) await navigator.share(shareData)
+      else if (navigator.clipboard) { await navigator.clipboard.writeText(shareData.url); setShareStatus('Link copied') }
+      else setShareStatus('Copy the link from your browser')
+    } catch (error) {
+      if (error.name !== 'AbortError') setShareStatus('Could not share right now')
+    }
+  }
   return <main className="article-page">
     <header className="article-header"><button onClick={onBack}><Icon name="arrow" size={18} />Back to jobs</button><img src="/optqvo-logo.svg" alt="OPTQVO" /></header>
     <article className="article-content">
@@ -80,23 +93,26 @@ function RazorpayArticle({ job, onBack }) {
       <section><h2>What you may work on</h2><ul><li>Build and improve product-facing features with engineers, product managers and designers.</li><li>Write well-tested services and interfaces that handle real customer workflows.</li><li>Debug issues, review code and learn the team’s engineering practices.</li><li>Contribute to systems where performance, security and reliability matter.</li></ul></section>
       <section><h2>Good fit for this role</h2><p>This brief is aimed at candidates with solid foundations in JavaScript, React, Node.js or comparable backend technologies. Show projects where you made a clear technical decision, worked through a problem, and shipped something useful.</p></section>
       <section><h2>Application checklist</h2><ul><li>Keep your résumé to one clear, relevant page.</li><li>Link your GitHub, portfolio or two projects you can explain confidently.</li><li>Tailor the summary to software engineering and your strongest stack.</li><li>Confirm the latest eligibility and job requirements on Razorpay’s careers page before applying.</li></ul></section>
-      <div className="article-apply"><span>Applications are handled on the official Razorpay careers site.</span><a href={job.apply} target="_blank" rel="noreferrer">Apply for this role <Icon name="arrow" size={17} /></a></div>
+      <div className="article-apply"><span>Applications are handled on the official Razorpay careers site.</span><a href={job.apply} target="_blank" rel="noreferrer">Apply for this role <Icon name="arrow" size={17} /></a><button className="share-article" onClick={shareArticle}><Icon name="share" size={17} />{shareStatus || 'Share this article'}</button></div>
     </article>
   </main>
 }
 
 function App() {
-  const [query, setQuery] = useState(''); const [type, setType] = useState('All types'); const [company, setCompany] = useState('All companies'); const [experience, setExperience] = useState('Any experience'); const [showFilters, setShowFilters] = useState(false); const [selectedJob, setSelectedJob] = useState(null); const [savedIds, setSavedIds] = useState([]); const [menuOpen, setMenuOpen] = useState(false); const [showRazorpayArticle, setShowRazorpayArticle] = useState(false)
+  const [query, setQuery] = useState(''); const [type, setType] = useState('All types'); const [company, setCompany] = useState('All companies'); const [experience, setExperience] = useState('Any experience'); const [showFilters, setShowFilters] = useState(false); const [selectedJob, setSelectedJob] = useState(null); const [savedIds, setSavedIds] = useState([]); const [menuOpen, setMenuOpen] = useState(false); const [showRazorpayArticle, setShowRazorpayArticle] = useState(() => window.location.hash === RAZORPAY_ARTICLE_HASH)
+  useEffect(() => { const syncArticleRoute = () => setShowRazorpayArticle(window.location.hash === RAZORPAY_ARTICLE_HASH); window.addEventListener('hashchange', syncArticleRoute); return () => window.removeEventListener('hashchange', syncArticleRoute) }, [])
   const visibleJobs = useMemo(() => jobs.filter((job) => { const searchable = `${job.company} ${job.role} ${job.location} ${job.tags.join(' ')}`.toLowerCase(); const matchingExperience = experience === 'Any experience' || (experience === 'Early career' && /0–2|1–3|Student/.test(job.experience)) || (experience === '2+ years' && /2–4|2–5/.test(job.experience)); const isIndiaRole = job.location.includes('India'); return isIndiaRole && searchable.includes(query.toLowerCase()) && (type === 'All types' || job.type === type) && (company === 'All companies' || job.company === company) && matchingExperience }), [company, experience, query, type])
   const toggleSaved = (id) => setSavedIds((ids) => ids.includes(id) ? ids.filter((savedId) => savedId !== id) : [...ids, id]); const clearFilters = () => { setType('All types'); setCompany('All companies'); setExperience('Any experience') }; const activeFilterCount = [type !== 'All types', company !== 'All companies', experience !== 'Any experience'].filter(Boolean).length
-  if (showRazorpayArticle) return <RazorpayArticle job={jobs[0]} onBack={() => setShowRazorpayArticle(false)} />
+  const openRazorpayArticle = () => { window.history.pushState(null, '', RAZORPAY_ARTICLE_HASH); setShowRazorpayArticle(true); window.scrollTo(0, 0) }
+  const closeRazorpayArticle = () => { window.history.pushState(null, '', window.location.pathname); setShowRazorpayArticle(false); window.scrollTo(0, 0) }
+  if (showRazorpayArticle) return <RazorpayArticle job={jobs[0]} onBack={closeRazorpayArticle} />
   return <main className="app-shell">
     <header className="topbar"><button className="menu-button" onClick={() => setMenuOpen(true)} aria-label="Open navigation"><Icon name="menu" size={21} /></button><a className="brand" href="#jobs" aria-label="OPTQVO home"><img src="/optqvo-logo.svg" alt="OPTQVO" /></a><a className="profile" href="#community" aria-label="Join the OPTQVO WhatsApp community">OQ</a></header>
     <section className="hero" id="jobs"><div className="live-pill"><Icon name="bolt" size={12} fill="currentColor" />FRESH JOB DROP <span>•</span> INDIA ONLY</div><h1>Find your next<br /><em>great role.</em></h1><p>Handpicked software jobs from teams hiring across India.</p></section>
     <section className="jobs-feed" aria-label="Job finder"><div className="search-row"><label className="search-box"><Icon name="search" size={18} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search role, company or skill" aria-label="Search jobs" /></label><button className={`filter-toggle ${activeFilterCount ? 'has-active' : ''}`} onClick={() => setShowFilters((open) => !open)} aria-expanded={showFilters} aria-controls="job-filters"><Icon name="tune" size={18} /><span>Filters</span>{activeFilterCount ? <b>{activeFilterCount}</b> : null}</button></div>{showFilters ? <div className="filter-panel" id="job-filters"><label>Role type<select value={type} onChange={(event) => setType(event.target.value)}><option>All types</option><option>Full-time</option><option>Internship</option></select></label><label>Company<select value={company} onChange={(event) => setCompany(event.target.value)}><option>All companies</option>{Array.from(new Set(jobs.map((job) => job.company))).map((name) => <option key={name}>{name}</option>)}</select></label><label>Experience<select value={experience} onChange={(event) => setExperience(event.target.value)}><option>Any experience</option><option>Early career</option><option>2+ years</option></select></label><button onClick={clearFilters}>Reset filters</button></div> : null}<div className="section-title"><div><p>INDIA SOFTWARE ROLES</p><h2>Latest opportunities</h2></div><span>{visibleJobs.length} jobs</span></div><div className="job-list">{visibleJobs.map((job) => <JobCard key={job.id} job={job} saved={savedIds.includes(job.id)} onSave={toggleSaved} onOpen={setSelectedJob} />)}</div>{visibleJobs.length === 0 ? <div className="empty-state"><strong>No roles found</strong><span>Try changing the company, experience or search term.</span><button onClick={() => { setQuery(''); clearFilters() }}>Clear search</button></div> : null}<p className="feed-note"><Icon name="check" size={13} />India-based roles only. More locations coming daily.</p></section>
     <section className="community" id="community"><span>OPTQVO COMMUNITY</span><h2>The right opportunity<br />should reach you first.</h2><p>Get job drops, business notes and tech news in our WhatsApp community.</p><a href={WHATSAPP_COMMUNITY_URL} target="_blank" rel="noreferrer">Join the community <Icon name="arrow" size={17} /></a></section>
     {selectedJob ? <JobDialog job={selectedJob} saved={savedIds.includes(selectedJob.id)} onClose={() => setSelectedJob(null)} onSave={toggleSaved} /> : null}
-    {menuOpen ? <MenuDrawer onClose={() => setMenuOpen(false)} onReadRazorpay={() => setShowRazorpayArticle(true)} /> : null}
+    {menuOpen ? <MenuDrawer onClose={() => setMenuOpen(false)} onReadRazorpay={openRazorpayArticle} /> : null}
   </main>
 }
 createRoot(document.getElementById('root')).render(<StrictMode><App /></StrictMode>)
